@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garis Masa Projek Sistem Inventori</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony (Slate background with Blue, Purple, Orange, and Green accents) -->
+    <!-- Application Structure Plan: A single-page, vertical interactive timeline. The layout is structured by weeks, with daily tasks represented as clickable cards. Clicking a card opens a modal with detailed information. This structure was chosen because it transforms a static table into an explorable and intuitive visual plan, preventing information overload by providing details on-demand. -->
+    <!-- Visualization & Content Choices: Report Info: Daily project tasks for August. Goal: Visualize the schedule, show phases, and track progress. Viz/Presentation: Color-coded task cards in a responsive grid for each week. Interaction: JavaScript click events on cards trigger a modal. Smooth-scrolling navigation buttons for each week. Justification: This approach is more engaging and user-friendly than a static table, providing a clear overview with easily accessible details. Library/Method: HTML, Tailwind CSS, Vanilla JS. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .modal-backdrop {
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+        .task-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .task-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div id="app" class="container mx-auto px-4 py-8 md:py-12">
+
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Projek Sistem Inventori Logistik</h1>
+            <p class="mt-2 text-lg text-slate-600">Garis Masa Pelaksanaan Interaktif - Ogos</p>
+        </header>
+
+        <nav class="flex justify-center flex-wrap gap-2 mb-12">
+            <button onclick="scrollToSection('minggu-1')" class="px-4 py-2 bg-white border border-slate-300 rounded-full text-slate-700 hover:bg-slate-100 transition">Minggu 1</button>
+            <button onclick="scrollToSection('minggu-2')" class="px-4 py-2 bg-white border border-slate-300 rounded-full text-slate-700 hover:bg-slate-100 transition">Minggu 2</button>
+            <button onclick="scrollToSection('minggu-3')" class="px-4 py-2 bg-white border border-slate-300 rounded-full text-slate-700 hover:bg-slate-100 transition">Minggu 3</button>
+            <button onclick="scrollToSection('minggu-4')" class="px-4 py-2 bg-white border border-slate-300 rounded-full text-slate-700 hover:bg-slate-100 transition">Minggu 4</button>
+        </nav>
+        
+        <main id="timeline-container" class="space-y-12">
+        </main>
+
+    </div>
+
+    <div id="task-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-md transform scale-95">
+            <div id="modal-header" class="p-5 border-b rounded-t-xl">
+                <h3 id="modal-title" class="text-xl font-bold">Butiran Tugasan</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <p class="text-sm font-medium text-slate-500">Tarikh</p>
+                    <p id="modal-date" class="text-lg"></p>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-slate-500">Fasa</p>
+                    <p id="modal-phase" class="text-lg"></p>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-slate-500">Tugasan Harian</p>
+                    <p id="modal-task" class="text-lg"></p>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-slate-50 rounded-b-xl text-right">
+                <button onclick="closeModal()" class="px-5 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const timelineData = [
+            { week: 1, date: '1 Ogos', day: 'Jumaat', phase: 'Perancangan', task: 'Mesyuarat Permulaan (Kick-off): Penetapan objektif, skop, dan pengenalan pasukan.', status: 'Selesai' },
+            { week: 1, date: '4 Ogos', day: 'Isnin', phase: 'Analisis', task: 'Sesi Kumpul Keperluan (Pagi & Petang): Bengkel dengan pasukan logistik untuk faham aliran kerja dan mendokumenkan proses stok masuk & keluar sedia ada.', status: 'Belum Mula' },
+            { week: 1, date: '5 Ogos', day: 'Selasa', phase: 'Analisis', task: 'Analisis Keperluan Laporan: Berbincang dengan pengurus tentang format laporan yang diperlukan.', status: 'Belum Mula' },
+            { week: 1, date: '6 Ogos', day: 'Rabu', phase: 'Analisis', task: 'Memuktamadkan Ciri-ciri: Senaraikan semua fungsi yang dipersetujui untuk dibangunkan.', status: 'Belum Mula' },
+            { week: 1, date: '7 Ogos', day: 'Khamis', phase: 'Perancangan', task: 'Penyediaan Dokumen Spesifikasi: Mula menulis dokumen spesifikasi keperluan perisian (SRS).', status: 'Belum Mula' },
+            { week: 1, date: '8 Ogos', day: 'Jumaat', phase: 'Perancangan', task: 'Kelulusan Dokumen: Semakan akhir dan mendapatkan kelulusan dokumen spesifikasi daripada pihak pengurusan.', status: 'Belum Mula' },
+            
+            { week: 2, date: '11 Ogos', day: 'Isnin', phase: 'Reka Bentuk UI/UX', task: 'Reka Bentuk Wireframe: Melakar struktur asas setiap halaman (Dashboard, Borang, Laporan).', status: 'Belum Mula' },
+            { week: 2, date: '12 Ogos', day: 'Selasa', phase: 'Reka Bentuk UI/UX', task: 'Reka Bentuk Mockup (Visual): Membina reka bentuk visual yang lebih terperinci berdasarkan wireframe.', status: 'Belum Mula' },
+            { week: 2, date: '13 Ogos', day: 'Rabu', phase: 'Reka Bentuk UI/UX', task: 'Semakan Dalaman: Pasukan pembangunan menyemak reka bentuk untuk kebolehlaksanaan teknikal.', status: 'Belum Mula' },
+            { week: 2, date: '14 Ogos', day: 'Khamis', phase: 'Reka Bentuk UI/UX', task: 'Sesi Maklum Balas Pengguna: Membentangkan mockup kepada pasukan logistik untuk mendapatkan input.', status: 'Belum Mula' },
+            { week: 2, date: '15 Ogos', day: 'Jumaat', phase: 'Pembangunan', task: 'Finalisasi Reka Bentuk & Persediaan: Kemas kini reka bentuk & mula menyediakan pangkalan data dan persekitaran pembangunan.', status: 'Belum Mula' },
+
+            { week: 3, date: '18 Ogos', day: 'Isnin', phase: 'Pembangunan', task: 'Pembangunan Modul Pengguna: Membina fungsi log masuk, log keluar, dan pengurusan peranan (Admin/Staf).', status: 'Belum Mula' },
+            { week: 3, date: '19 Ogos', day: 'Selasa', phase: 'Pembangunan', task: 'Pembangunan Pangkalan Data: Memuktamadkan struktur jadual untuk item, transaksi, dan pengguna.', status: 'Belum Mula' },
+            { week: 3, date: '20 Ogos', day: 'Rabu', phase: 'Pembangunan', task: 'Pembangunan Modul Stok Masuk: Membina borang dan logik untuk merekod stok yang diterima.', status: 'Belum Mula' },
+            { week: 3, date: '21 Ogos', day: 'Khamis', phase: 'Pembangunan', task: 'Pembangunan Modul Stok Keluar: Membina borang dan logik untuk merekod stok yang dikeluarkan.', status: 'Belum Mula' },
+            { week: 3, date: '22 Ogos', day: 'Jumaat', phase: 'Pengujian', task: 'Pengujian Unit: Menguji fungsi stok masuk dan keluar secara berasingan untuk memastikan ia berfungsi dengan betul.', status: 'Belum Mula' },
+
+            { week: 4, date: '25 Ogos', day: 'Isnin', phase: 'Pembangunan', task: 'Pembangunan Paparan Inventori: Membina jadual untuk memaparkan senarai penuh stok semasa.', status: 'Belum Mula' },
+            { week: 4, date: '26 Ogos', day: 'Selasa', phase: 'Pembangunan', task: 'Pembangunan Fungsi Carian & Penapis: Menambah fungsi carian pantas dan penapis pada halaman inventori.', status: 'Belum Mula' },
+            { week: 4, date: '27 Ogos', day: 'Rabu', phase: 'Pembangunan', task: 'Pembangunan Dashboard: Membina paparan dashboard utama dengan ringkasan data dan graf.', status: 'Belum Mula' },
+            { week: 4, date: '28 Ogos', day: 'Khamis', phase: 'Pembangunan', task: 'Pembangunan Modul Laporan: Membina fungsi untuk menjana laporan harian, mingguan, bulanan dan eksport ke Excel/PDF.', status: 'Belum Mula' },
+            { week: 4, date: '29 Ogos', day: 'Jumaat', phase: 'Pengujian', task: 'Pengujian Integrasi Awal: Menguji semua modul bersama untuk memastikan ia berinteraksi dengan lancar. Mula merangka manual pengguna.', status: 'Belum Mula' }
+        ];
+
+        const phaseConfig = {
+            'Perancangan': { color: 'blue', title: 'Perancangan & Analisis' },
+            'Analisis': { color: 'blue', title: 'Perancangan & Analisis' },
+            'Reka Bentuk UI/UX': { color: 'purple', title: 'Reka Bentuk & Persediaan' },
+            'Pembangunan': { color: 'orange', title: 'Pembangunan Sistem' },
+            'Pengujian': { color: 'green', title: 'Pengujian & Semakan' }
+        };
+
+        const statusConfig = {
+            'Selesai': 'bg-green-100 text-green-800',
+            'Sedang Dijalankan': 'bg-yellow-100 text-yellow-800',
+            'Belum Mula': 'bg-slate-100 text-slate-800'
+        };
+        
+        const weekSummaries = {
+            1: "Fokus minggu ini adalah untuk memahami sepenuhnya keperluan projek dan memuktamadkan skop kerja sebelum reka bentuk bermula.",
+            2: "Fasa ini menumpukan pada reka bentuk antaramuka pengguna (UI) dan pengalaman pengguna (UX) untuk memastikan sistem mudah digunakan.",
+            3: "Pembangunan teras sistem bermula, dengan fokus pada fungsi-fungsi utama seperti pengurusan pengguna dan transaksi stok.",
+            4: "Fasa terakhir pembangunan melibatkan ciri-ciri lanjutan seperti paparan inventori dan laporan, diikuti dengan pengujian awal."
+        }
+
+        function renderTimeline() {
+            const container = document.getElementById('timeline-container');
+            container.innerHTML = '';
+            const weeks = [...new Set(timelineData.map(item => item.week))];
+
+            weeks.forEach(weekNum => {
+                const weekData = timelineData.filter(item => item.week === weekNum);
+                const firstPhase = weekData[0].phase;
+                const weekTitle = phaseConfig[firstPhase].title;
+
+                const weekSection = document.createElement('section');
+                weekSection.id = `minggu-${weekNum}`;
+                weekSection.className = 'p-6 bg-white rounded-xl shadow-sm';
+                
+                weekSection.innerHTML = `
+                    <div class="border-b border-slate-200 pb-4 mb-6">
+                        <h2 class="text-2xl font-bold text-slate-800">Minggu ${weekNum}: ${weekTitle}</h2>
+                        <p class="mt-1 text-slate-500">${weekSummaries[weekNum]}</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        ${weekData.map((task, index) => createTaskCard(task, weekNum, index)).join('')}
+                    </div>
+                `;
+                container.appendChild(weekSection);
+            });
+        }
+
+        function createTaskCard(task, weekNum, indexInWeek) {
+            const globalIndex = timelineData.findIndex(t => t.date === task.date && t.task === task.task);
+            const color = phaseConfig[task.phase].color;
+            const statusClass = statusConfig[task.status];
+            
+            return `
+                <div onclick="openModal(${globalIndex})" class="task-card cursor-pointer bg-slate-50/50 rounded-lg p-4 border border-slate-200 hover:border-${color}-400">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-bold text-slate-800">${task.day}, ${task.date}</p>
+                            <p class="text-sm text-slate-500">${task.phase}</p>
+                        </div>
+                        <span class="text-xs font-medium px-2.5 py-0.5 rounded-full ${statusClass}">${task.status}</span>
+                    </div>
+                    <p class="mt-3 text-slate-700">${task.task.substring(0, 60)}...</p>
+                </div>
+            `;
+        }
+        
+        function openModal(index) {
+            const task = timelineData[index];
+            const modal = document.getElementById('task-modal');
+            const modalContent = modal.querySelector('.modal-content');
+            
+            document.getElementById('modal-title').textContent = `${task.day}, ${task.date}`;
+            document.getElementById('modal-date').textContent = `${task.date}`;
+            document.getElementById('modal-phase').textContent = task.phase;
+            document.getElementById('modal-task').textContent = task.task;
+            
+            const header = document.getElementById('modal-header');
+            header.className = `p-5 border-b rounded-t-xl bg-${phaseConfig[task.phase].color}-500 text-white`;
+            document.getElementById('modal-title').className = 'text-xl font-bold';
+
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('task-modal');
+            const modalContent = modal.querySelector('.modal-content');
+
+            modal.classList.add('opacity-0');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date('2025-08-02T11:42:00'); // Simulating current date for demo
+            
+            timelineData.forEach(task => {
+                const taskDateStr = task.date.replace(' Ogos', '') + ' August 2025';
+                const taskDate = new Date(taskDateStr);
+                
+                if (taskDate < today) {
+                    task.status = 'Selesai';
+                } else if (taskDate.toDateString() === today.toDateString()) {
+                    task.status = 'Sedang Dijalankan';
+                } else {
+                    task.status = 'Belum Mula';
+                }
+            });
+            
+            renderTimeline();
+        });
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('task-modal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+    </script>
+</body>
+</html>
